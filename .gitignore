@@ -1,0 +1,12 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# Xcode per-user state and local build output
+xcuserdata/
+*.xcuserstate
+build/
+DerivedData/
+
+# Signed shortcuts embed the signer's certificate chain; generate and sign your own with make-shortcut.py
+*.shortcut

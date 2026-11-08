@@ -146,6 +146,10 @@ rm -rf ~/Applications/"Logo Light Toggle.app"
 
 Note: reinstalling macOS also turns the logo light back on.
 
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE). The license covers this project's own code and files; Apple's trademarks and the hero image remain Apple's.
+
 ## Disclaimer
 
 Apple, the Apple logo and MacBook Pro are trademarks of Apple Inc. This project is not affiliated with or endorsed by Apple.

@@ -67,6 +67,8 @@ It:
 
 Trade-off: any program running under your account can switch the logo light without a password, but it gets no other root access.
 
+The rule covers one account: running the script from another account moves it there.
+
 The passwordless path runs the copy in `/usr/local/libexec`, so after editing `logo-light.sh`, run `sudo ./install-nopasswd.sh` again.
 
 To remove it (the app goes back to asking for a password):
@@ -104,14 +106,14 @@ Both also accept `on` and `off`.
 | File | Purpose |
 | --- | --- |
 | `logo-light.sh` | Core script: `status` / `on` / `off` / `toggle` (default `toggle`) |
-| `MacBookLogoToggle.applescript` | App source. Opening the app toggles; opening `macbooklogotoggle://on` / `off` sets that state. Uses passwordless `sudo -n` when the rule is installed, the administrator prompt otherwise, then shows a notification |
+| `MacBookLogoToggle.applescript` | App source. Opening the app toggles; opening `macbooklogotoggle://on` / `off` sets that state; any other URL, such as `macbooklogotoggle://launch`, only launches it (see [Rebuild](#rebuild)). Uses passwordless `sudo -n` when the rule is installed, the administrator prompt otherwise, then shows a notification |
 | `install-nopasswd.sh` | Installs / uninstalls the root-owned helper and the sudoers rule that allows only it |
 | `Control/` + `MacBookLogoToggle.xcodeproj` | The Control Center switch extension (WidgetKit), built and embedded into the app by `build.sh` |
 | `logo.svg` | The black flat logo (classic apple with an arc cut from lower left to upper right, narrowing as it rises), the single source for the app icon and the Control Center symbol |
 | `make-icon.swift` | Composes the app icon from `logo.svg` (run by `build.sh`) |
 | `make-symbol.py` | Turns `logo.svg` into the custom SF Symbol `applelogo.cut` (run by `build.sh`; don't edit its output by hand) |
 | `trace-logo.py` | One-off script that traced `logo.svg` from a reference image (needs Pillow; not part of the build) |
-| `build.sh` | Builds the extension, icon and app, and installs `~/Applications/MacBook Logo Toggle.app` |
+| `build.sh` | Builds the extension, icon and app, installs `~/Applications/MacBook Logo Toggle.app`, registers it as trusted and launches it once without switching the light |
 
 ## Rebuild
 
@@ -123,7 +125,15 @@ After changing the scripts, the AppleScript, `logo.svg` or `Control/`, rebuild a
 
 If the build fails, the installed app is left untouched.
 
+With [passwordless switching](#passwordless-switching) the app runs the installed helper rather than the `logo-light.sh` it bundles, and the build can't update the helper. If the two differ, the build says so at the end: run `sudo ./install-nopasswd.sh` then.
+
 Every build gets a new version number, which is what makes Control Center re-read the switch's name and description instead of showing a cached copy. macOS registers the reinstalled extension asynchronously, so Control Center can take a little while after the build to pick it up.
+
+macOS ignores the switch of an app it doesn't trust: tapping it only snaps it back. So the build registers the app as trusted, the way Xcode registers the apps it builds, and also launches it once through `macbooklogotoggle://launch`, which switches nothing but is another way to get it trusted. If the switch ever snaps back anyway, launch the app the same way. Name the app by its path: a bare `open "macbooklogotoggle://launch"` lets macOS pick any copy that claims the URL scheme, possibly an older one that switches the light.
+
+```bash
+open -g -a ~/Applications/"MacBook Logo Toggle.app" "macbooklogotoggle://launch"
+```
 
 ## Uninstall
 

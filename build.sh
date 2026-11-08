@@ -68,6 +68,27 @@ ditto "$STAGE" "$APP"
 $LSREGISTER -u "$STAGE" 2>/dev/null || true
 rm -rf "$STAGE"
 codesign --verify --deep --strict "$APP"
-$LSREGISTER -f "$APP"
+# -trusted (undocumented; Xcode registers every app it builds with lsregister -f -R -trusted): a new
+# LaunchServices record is "launch-disabled" unless it is registered trusted or replaces a trusted
+# record at the same path, and other LaunchServices clients often drop the old record as soon as the
+# copy above replaces it. linkd skips the App Intents of a launch-disabled app ("not trusted for
+# binding"), so taps on the switch fail ("Encountered action intent without linkAction") and it
+# snaps back. Should -trusted ever be refused, fall back to a plain registration and leave the trust
+# to the launch below.
+$LSREGISTER -f -trusted "$APP" || $LSREGISTER -f "$APP"
 pluginkit -a "$APP/Contents/PlugIns/MacBookLogoToggleControl.appex"
+
+# Launching the app through LaunchServices gets it marked trusted too, so this backs up -trusted with
+# nothing to parse. The no-op launch URL leaves the light alone.
+open -g -a "$APP" "macbooklogotoggle://launch" ||
+  echo "Couldn't launch the app once; if the Control Center switch snaps back, run: open -g -a ${(qq)APP} \"macbooklogotoggle://launch\"" >&2
 echo "Installed: $APP"
+
+# With passwordless switching the app runs the root-owned copy of logo-light.sh that install-nopasswd.sh
+# made, which this build can't update (it needs sudo). The copy is world-readable, so just compare.
+# Like the README's own commands, the hint assumes a single account using the passwordless rule (the
+# rule is one per Mac, granted to whoever runs install-nopasswd.sh) and a shell in the repo directory.
+HELPER=/usr/local/libexec/logo-light
+if [[ -e $HELPER ]] && ! cmp -s logo-light.sh "$HELPER"; then
+  echo "The passwordless helper $HELPER differs from logo-light.sh; update it with: sudo ./install-nopasswd.sh" >&2
+fi

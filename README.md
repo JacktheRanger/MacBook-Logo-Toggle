@@ -1,3 +1,5 @@
+![MacBook Pro with PROLED XDR Display](assets/hero.webp)
+
 # MacBook Logo Toggle
 
 A Control Center switch for the glowing Apple logo on the back of the MacBook Pro with PROLED XDR Display. macOS has no setting for it; this project adds an "Apple Logo Light" switch that looks and works like the built-in Wi-Fi and Bluetooth switches.

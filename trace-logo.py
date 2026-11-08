@@ -1,14 +1,17 @@
 """Traces the flat logo from a reference image: the opaque area is the apple + leaf, the dark grey arc is the cut.
 Writes logo.svg (black fill; the cut is a real gap, no mask) and a preview PNG.
 Only run by hand when re-tracing or adjusting the cut (needs Pillow); builds only use its output, logo.svg.
-Usage: python3 -I trace-logo.py <reference.png> <out.svg> <preview.png> [cut width px] [right end dx] [right end dy]
-The current logo.svg was made with cut width 44, right end dx 45, dy 50, from a 1024×1238 PNG of the classic silver Apple logo.
+The cut follows the band's own width, which tapers from the lower left to the upper right; [cut scale] multiplies it.
+Usage: python3 -I trace-logo.py <reference.png> <out.svg> <preview.png> [cut scale] [right end dx] [right end dy]
+The current logo.svg was made with cut scale 1.7, right end dx 45, dy 50, from a 1024×1238 PNG of the classic silver Apple logo
+(at scale 1 the upper right of the cut fades below a pixel at the Control Center symbol's size; 1.7 keeps the whole cut visible).
 """
 import sys, math
 from PIL import Image, ImageDraw, ImageFilter
 
 src, out_svg, out_png = sys.argv[1:4]
-CUT = float(sys.argv[4]) if len(sys.argv) > 4 else 30.0
+# Cut width as a multiple of the band's measured width (step 2b)
+CUT_SCALE = float(sys.argv[4]) if len(sys.argv) > 4 else 1.0
 # Shift of the cut's right end (px), so it exits through the right shoulder instead of leaving a sliver along the top edge
 END_DX = float(sys.argv[5]) if len(sys.argv) > 5 else 0.0
 END_DY = float(sys.argv[6]) if len(sys.argv) > 6 else 0.0
@@ -67,13 +70,44 @@ det = A11 * A22 - A12 * A12
 P1 = ((Cx1 * A22 - Cx2 * A12) / det, (Cy1 * A22 - Cy2 * A12) / det)
 P2 = ((A11 * Cx2 - A12 * Cx1) / det, (A11 * Cy2 - A12 * Cy1) / det)
 
-P2 = (P2[0] + END_DX * 0.6, P2[1] + END_DY * 0.6)
-P3 = (P3[0] + END_DX, P3[1] + END_DY)
-
 def bez(t):
     m = 1 - t
     return (m**3 * P0[0] + 3 * m * m * t * P1[0] + 3 * m * t * t * P2[0] + t**3 * P3[0],
             m**3 * P0[1] + 3 * m * m * t * P1[1] + 3 * m * t * t * P2[1] + t**3 * P3[1])
+
+# 2b) Width profile: the band is wide at the lower left and narrows towards the upper right.
+# Measure it across the fitted centre line (before the right end is shifted below): from the centre, walk out along the
+# normal on both sides until the colour is clearly lighter than the band (same contrast as step 1) or leaves the opaque area.
+def red(x, y):
+    x0, y0 = int(x), int(y); fx, fy = x - x0, y - y0
+    if px[x0, y0][3] < 255 or px[x0 + 1, y0 + 1][3] < 255:
+        return 999
+    return (px[x0, y0][0] * (1 - fx) * (1 - fy) + px[x0 + 1, y0][0] * fx * (1 - fy)
+            + px[x0, y0 + 1][0] * (1 - fx) * fy + px[x0 + 1, y0 + 1][0] * fx * fy)
+samples = []
+for i in range(3, 98):  # the ends meet the outline, where the band is cut off
+    t = i / 100
+    x, y = bez(t)
+    a, b = bez(t - 0.005), bez(t + 0.005)
+    n = math.dist(a, b); nx, ny = -(b[1] - a[1]) / n, (b[0] - a[0]) / n
+    c = red(x, y)
+    w = 0.0
+    for sgn in (1, -1):
+        s = 0.0
+        while s < 60 and red(x + sgn * nx * s, y + sgn * ny * s) < c + 25:
+            s += 0.25
+        w += s
+    samples.append((t, w))
+# Smooth with a Gaussian kernel so the cut's edges stay smooth; past the measured range the width stays at its end value.
+# A low-order polynomial can't follow this profile (it narrows slowly, then quickly, then hardly at all).
+def band_width(t):
+    t = min(max(t, samples[0][0]), samples[-1][0])
+    wts = [math.exp(-((t - ts_) / 0.06) ** 2 / 2) for ts_, _ in samples]
+    return sum(w_ * v for w_, (_, v) in zip(wts, samples)) / sum(wts)
+print('band width (px) at t = 0, .25, .5, .75, 1:', [round(band_width(t), 1) for t in (0, .25, .5, .75, 1)])
+
+P2 = (P2[0] + END_DX * 0.6, P2[1] + END_DY * 0.6)
+P3 = (P3[0] + END_DX, P3[1] + END_DY)
 
 err = max(min(math.dist(bez(i / 400), p) for i in range(401)) for p in pts[::5])
 print(f'{len(pts)} arc points, max fit error {err:.1f}px, P0={P0} P3={P3}')
@@ -95,13 +129,15 @@ for y in range(H):
         if px[x, y][3] == 255:
             mp[x, y] = 255
 mask = mask.resize((W * S, H * S), Image.NEAREST)
-# Draw the cut as a smooth band polygon (centre line offset by CUT/2 along the normal on each side); a thick polyline bulges at its joints
+# Draw the cut as a smooth band polygon (centre line offset by half the local width along the normal on each side); a thick polyline bulges at its joints
 left_side, right_side = [], []
 for i, (x, y) in enumerate(curve):
     a = curve[max(i - 1, 0)]; b = curve[min(i + 1, len(curve) - 1)]
     tx, ty = b[0] - a[0], b[1] - a[1]
     n = math.hypot(tx, ty)
-    nx, ny = -ty / n * CUT / 2, tx / n * CUT / 2
+    t = min(max((i - 2) / 200, 0.0), 1.0)  # curve[2:203] are bez(0..1); the two extensions on each side reuse the end widths
+    half = CUT_SCALE * band_width(t) / 2
+    nx, ny = -ty / n * half, tx / n * half
     left_side.append(((x + nx) * S, (y + ny) * S))
     right_side.append(((x - nx) * S, (y - ny) * S))
 ImageDraw.Draw(mask).polygon(left_side + right_side[::-1], fill=0)
@@ -214,7 +250,7 @@ shift = [[(x - x0, y - y0) for x, y in s] for s in simplified]
 vb_w, vb_h = x1 - x0, y1 - y0
 d_attr = ''.join(to_path(s) for s in shift)
 svg = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {vb_w:.1f} {vb_h:.1f}" width="{vb_w:.0f}" height="{vb_h:.0f}">
-  <!-- Flat logo: the classic apple + leaf with an arc cut from lower left to upper right (the cut is a real gap, no mask).
+  <!-- Flat logo: the classic apple + leaf with an arc cut from lower left to upper right, narrowing as it rises (the cut is a real gap, no mask).
        Traced from a reference image by trace-logo.py; the single source for the app icon and the Control Center symbol. -->
   <path fill="#000000" fill-rule="evenodd" d="{d_attr}"/>
 </svg>

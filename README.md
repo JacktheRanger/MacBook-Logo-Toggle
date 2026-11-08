@@ -4,7 +4,7 @@
 
 A Control Center switch for the glowing Apple logo on the back of the MacBook Pro with PROLED XDR Display. macOS has no setting for it; this project adds an "Apple Logo Illumination" switch that looks and works like the built-in Wi-Fi and Bluetooth switches.
 
-<img src="assets/control-center-switch.jpg" alt="The Apple Logo switch in Control Center, turned on, alongside Bluetooth, Focus and Dark Mode" width="364">
+<img src="assets/control-center-switch.jpg" alt="The Apple Logo switch in Control Center, turned on, alongside Bluetooth, Focus and Dark Mode" width="368">
 
 It uses the method from Apple's support article <https://support.apple.com/en-us/149248>:
 
@@ -47,7 +47,7 @@ This step has to be done by hand: Control Center keeps its controls in a system 
 
 3. Drag **Apple Logo Illumination** into Control Center (or straight into the menu bar):
 
-   <img src="assets/edit-controls.png" alt="Apple Logo Illumination under MacBook Logo Toggle in Edit Controls" width="502">
+   <img src="assets/edit-controls.png" alt="Apple Logo Illumination under MacBook Logo Toggle in Edit Controls" width="528">
 
 Tapping it then turns the logo light on or off. The switch shows **On** / **Off** and is highlighted when on, and a notification shows the result. Without the passwordless rule, an administrator prompt appears in between.
 
@@ -107,7 +107,7 @@ Both also accept `on` and `off`.
 | `MacBookLogoToggle.applescript` | App source. Opening the app toggles; opening `macbooklogotoggle://on` / `off` sets that state. Uses passwordless `sudo -n` when the rule is installed, the administrator prompt otherwise, then shows a notification |
 | `install-nopasswd.sh` | Installs / uninstalls the root-owned helper and the sudoers rule that allows only it |
 | `Control/` + `MacBookLogoToggle.xcodeproj` | The Control Center switch extension (WidgetKit), built and embedded into the app by `build.sh` |
-| `logo.svg` | The black flat logo (classic apple with an arc cut from lower left to upper right), the single source for the app icon and the Control Center symbol |
+| `logo.svg` | The black flat logo (classic apple with an arc cut from lower left to upper right, narrowing as it rises), the single source for the app icon and the Control Center symbol |
 | `make-icon.swift` | Composes the app icon from `logo.svg` (run by `build.sh`) |
 | `make-symbol.py` | Turns `logo.svg` into the custom SF Symbol `applelogo.cut` (run by `build.sh`; don't edit its output by hand) |
 | `trace-logo.py` | One-off script that traced `logo.svg` from a reference image (needs Pillow; not part of the build) |

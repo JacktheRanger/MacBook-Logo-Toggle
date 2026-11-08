@@ -7,6 +7,3 @@ xcuserdata/
 *.xcuserstate
 build/
 DerivedData/
-
-# Signed shortcuts embed the signer's certificate chain; generate and sign your own with make-shortcut.py
-*.shortcut

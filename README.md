@@ -17,7 +17,7 @@ The setting lives in root's defaults domain and applies to every user account, s
 
 - MacBook Pro with PROLED XDR Display
 - macOS 26 or later
-- Xcode, to build the Control Center extension
+- Xcode, to build the Control Center extension (it is signed ad hoc, so no developer certificate is needed)
 - An administrator account
 
 ## Install
@@ -52,14 +52,6 @@ This step has to be done by hand: Control Center keeps its controls in a system 
 Tapping it then turns the logo light on or off. The switch shows **On** / **Off** and is highlighted when on, and a notification shows the result. Without the passwordless rule, an administrator prompt appears in between.
 
 The extension runs in the App Sandbox, so it can't get root or read the real state of the light, and the app can't report back whether a switch worked. The switch therefore shows the last value set from Control Center. It can drift from the real state after switching from the command line or by opening the app directly, or when the administrator prompt is cancelled or the switch fails. Tapping it once more brings it back in line.
-
-The extension is signed ad hoc (no developer certificate is needed). If **Apple Logo Illumination** doesn't show up in Edit Controls, use a shortcut instead, at the cost of a generic icon:
-
-```bash
-python3 make-shortcut.py /tmp/unsigned.shortcut && shortcuts sign --mode anyone --input /tmp/unsigned.shortcut --output "MacBook Logo Toggle.shortcut"
-```
-
-Signing needs you to be signed in to iCloud. Double-click `MacBook Logo Toggle.shortcut` to import it, then add the **Shortcut** control in Edit Controls and choose **MacBook Logo Toggle**.
 
 ## Passwordless switching
 
@@ -119,7 +111,6 @@ Both also accept `on` and `off`.
 | `make-icon.swift` | Composes the app icon from `logo.svg` (run by `build.sh`) |
 | `make-symbol.py` | Turns `logo.svg` into the custom SF Symbol `applelogo.cut` (run by `build.sh`; don't edit its output by hand) |
 | `trace-logo.py` | One-off script that traced `logo.svg` from a reference image (needs Pillow; not part of the build) |
-| `make-shortcut.py` | Generates the optional fallback shortcut (unsigned) |
 | `build.sh` | Builds the extension, icon and app, and installs `~/Applications/MacBook Logo Toggle.app` |
 
 ## Rebuild
@@ -148,7 +139,7 @@ If you installed the passwordless rule, remove it and the helper:
 sudo ./install-nopasswd.sh uninstall
 ```
 
-Remove **Apple Logo Illumination** from Control Center in Edit Controls (and, if you used the fallback, delete the **MacBook Logo Toggle** shortcut and its Shortcut control), then delete the app:
+Remove **Apple Logo Illumination** from Control Center in Edit Controls, then delete the app:
 
 ```bash
 rm -rf ~/Applications/"MacBook Logo Toggle.app"

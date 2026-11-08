@@ -51,9 +51,9 @@ report() {
   local state
   state=$(current_state)
   if [[ $state == off ]]; then
-    echo "Apple logo light: Off"
+    echo "Apple Logo Illumination: Off"
   else
-    echo "Apple logo light: On (follows display brightness)"
+    echo "Apple Logo Illumination: On (follows display brightness)"
   fi
 }
 

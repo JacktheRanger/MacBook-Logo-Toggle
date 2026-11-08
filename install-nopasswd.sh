@@ -92,7 +92,7 @@ fi
 # (-k ignores the credentials cached by the sudo that started this script).
 # Not sudo -l: once any NOPASSWD rule exists it reports every command an admin may run as allowed.
 if sudo -u "$USER_NAME" sudo -k -n "$HELPER" status >/dev/null 2>&1; then
-  echo "Installed: $USER_NAME can now switch the Apple logo light without a password (Control Center, the app and the command line)."
+  echo "Installed: $USER_NAME can now turn Apple Logo Illumination on or off without a password (Control Center, the app and the command line)."
   echo "Command line: sudo $HELPER status | on | off | toggle"
 else
   echo "The rule was written to $RULE, but sudo did not pick it up (/etc/sudoers may not include sudoers.d)." >&2

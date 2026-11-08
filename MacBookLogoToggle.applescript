@@ -1,6 +1,9 @@
--- Turns the Apple logo light on or off. Two entry points:
+-- Turns the Apple logo light on or off. Entry points:
 --   - opening the app directly (Finder, Spotlight): toggle;
---   - opening macbooklogotoggle://on or ://off (what the Control Center switch does): set that state.
+--   - opening macbooklogotoggle://on or ://off (what the Control Center switch does): set that state;
+--   - opening any other URL, such as macbooklogotoggle://launch: nothing beyond the launch itself, so a
+--     mistyped or stray link never switches the light. Being launched is enough for macOS to trust a new
+--     build, which the Control Center switch needs (build.sh opens ://launch after installing, see there).
 -- The setting lives in root's defaults domain, so switching it needs root:
 --   - with the passwordless rule (install-nopasswd.sh): run /usr/local/libexec/logo-light through sudo -n, no prompt;
 --   - without it: run the bundled Contents/Resources/logo-light.sh behind the admin password prompt.
@@ -11,13 +14,12 @@ on run
 	switchLight("toggle")
 end run
 
+-- Compared whole, not parsed: these are the only two URLs the switch sends ("is" ignores case).
 on open location theURL
-	if theURL ends with "://on" then
+	if theURL is "macbooklogotoggle://on" then
 		switchLight("on")
-	else if theURL ends with "://off" then
+	else if theURL is "macbooklogotoggle://off" then
 		switchLight("off")
-	else
-		switchLight("toggle")
 	end if
 end open location
 
@@ -43,8 +45,10 @@ on switchLight(action)
 		end if
 	on error errMsg number errNum
 		if errNum is -128 then return -- the user cancelled the admin prompt
-		display alert "Couldn't switch the Apple logo light" message errMsg as critical
+		display alert "Couldn't switch Apple Logo Illumination" message errMsg as critical
 		return
 	end try
-	display notification resultText with title "Apple Logo Illumination"
+	-- No title: macOS then uses the app's name, and resultText already names the control
+	-- ("Apple Logo Illumination: On"), so the two lines don't repeat each other.
+	display notification resultText
 end switchLight

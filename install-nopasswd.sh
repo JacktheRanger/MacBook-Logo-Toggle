@@ -2,7 +2,7 @@
 # Makes the logo light switch passwordless: installs logo-light.sh as the root-owned
 # /usr/local/libexec/logo-light and adds a sudoers rule that lets the current account run it
 # without a password, with toggle / on / off / status as the only allowed arguments.
-# Logo Light Toggle.app detects the rule and switches without showing the admin prompt.
+# MacBook Logo Toggle.app detects the rule and switches without showing the admin prompt.
 #
 # Usage: sudo ./install-nopasswd.sh [install]    install (re-run after editing logo-light.sh to update it)
 #        sudo ./install-nopasswd.sh uninstall    remove; the app goes back to asking for a password

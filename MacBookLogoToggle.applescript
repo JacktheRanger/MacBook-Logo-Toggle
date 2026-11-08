@@ -1,6 +1,6 @@
 -- Turns the Apple logo light on or off. Two entry points:
 --   - opening the app directly (Finder, Shortcuts): toggle;
---   - opening logolighttoggle://on or ://off (what the Control Center switch does): set that state.
+--   - opening macbooklogotoggle://on or ://off (what the Control Center switch does): set that state.
 -- The setting lives in root's defaults domain, so switching it needs root:
 --   - with the passwordless rule (install-nopasswd.sh): run /usr/local/libexec/logo-light through sudo -n, no prompt;
 --   - without it: run the bundled Contents/Resources/logo-light.sh behind the admin password prompt.
@@ -46,5 +46,5 @@ on switchLight(action)
 		display alert "Couldn't switch the Apple logo light" message errMsg as critical
 		return
 	end try
-	display notification resultText with title "Apple Logo Light"
+	display notification resultText with title "Apple Logo Illumination"
 end switchLight

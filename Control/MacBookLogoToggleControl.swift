@@ -7,7 +7,7 @@ import WidgetKit
 // (its icon is the custom symbol generated from logo.svg).
 //
 // The extension runs in the App Sandbox and can't get root, so the actual switch is done by the
-// containing Logo Light Toggle.app: the extension opens logolighttoggle://on or ://off, and the app
+// containing MacBook Logo Toggle.app: the extension opens macbooklogotoggle://on or ://off, and the app
 // runs /usr/local/libexec/logo-light through passwordless sudo when that rule is installed, or the
 // bundled logo-light.sh behind the admin password prompt when it isn't.
 //
@@ -17,31 +17,31 @@ import WidgetKit
 // admin prompt is cancelled or the switch fails; tapping it once more brings it back in line.
 
 @main
-struct LogoLightControls: WidgetBundle {
+struct MacBookLogoToggleControls: WidgetBundle {
   var body: some Widget {
-    LogoLightControl()
+    LogoIlluminationControl()
   }
 }
 
-struct LogoLightControl: ControlWidget {
+struct LogoIlluminationControl: ControlWidget {
   var body: some ControlWidgetConfiguration {
-    StaticControlConfiguration(kind: "local.logo-light-toggle.control", provider: Provider()) { isOn in
-      ControlWidgetToggle("Apple Logo", isOn: isOn, action: SetLogoLightIntent()) { on in
+    StaticControlConfiguration(kind: "local.macbook-logo-toggle.control", provider: Provider()) { isOn in
+      ControlWidgetToggle("Apple Logo", isOn: isOn, action: SetLogoIlluminationIntent()) { on in
         Label(on ? "On" : "Off", image: "applelogo.cut")
       }
       .tint(.blue)
     }
-    .displayName("Apple Logo Light")
+    .displayName("Apple Logo Illumination")
     .description("Turns the glowing Apple logo on the back of a MacBook Pro on or off.")
   }
 
   struct Provider: ControlValueProvider {
     var previewValue: Bool { true }
-    func currentValue() async throws -> Bool { LogoLightState.isOn }
+    func currentValue() async throws -> Bool { LogoIlluminationState.isOn }
   }
 }
 
-enum LogoLightState {
+enum LogoIlluminationState {
   private static let key = "isOn"
 
   /// Treated as the system default (on) until something has been set.
@@ -51,18 +51,18 @@ enum LogoLightState {
   }
 }
 
-struct SetLogoLightIntent: SetValueIntent {
-  static let title: LocalizedStringResource = "Set Apple Logo Light"
+struct SetLogoIlluminationIntent: SetValueIntent {
+  static let title: LocalizedStringResource = "Set Apple Logo Illumination"
 
   @Parameter(title: "On")
   var value: Bool
 
   func perform() async throws -> some IntentResult {
-    let url = URL(string: "logolighttoggle://\(value ? "on" : "off")")!
+    let url = URL(string: "macbooklogotoggle://\(value ? "on" : "off")")!
     let config = NSWorkspace.OpenConfiguration()
     config.activates = false
     _ = try await NSWorkspace.shared.open(url, configuration: config)
-    LogoLightState.isOn = value
+    LogoIlluminationState.isOn = value
     return .result()
   }
 }

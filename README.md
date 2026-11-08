@@ -2,7 +2,9 @@
 
 # MacBook Logo Toggle
 
-A Control Center switch for the glowing Apple logo on the back of the MacBook Pro with PROLED XDR Display. macOS has no setting for it; this project adds an "Apple Logo Light" switch that looks and works like the built-in Wi-Fi and Bluetooth switches.
+A Control Center switch for the glowing Apple logo on the back of the MacBook Pro with PROLED XDR Display. macOS has no setting for it; this project adds an "Apple Logo Illumination" switch that looks and works like the built-in Wi-Fi and Bluetooth switches.
+
+<img src="assets/control-center-switch.jpg" alt="The Apple Logo switch in Control Center, turned on, alongside Bluetooth, Focus and Dark Mode" width="364">
 
 It uses the method from Apple's support article <https://support.apple.com/en-us/149248>:
 
@@ -39,19 +41,25 @@ The setting lives in root's defaults domain and applies to every user account, s
 This step has to be done by hand: Control Center keeps its controls in a system database with no command-line or configuration-file interface.
 
 1. Click Control Center in the menu bar, scroll to the bottom and click **Edit Controls**.
-2. Search for **Apple Logo** and drag **Apple Logo Light** into Control Center (or straight into the menu bar).
+2. Search for **Apple Logo**, or pick **MacBook Logo Toggle** in the sidebar:
+
+   <img src="assets/edit-controls-sidebar.png" alt="MacBook Logo Toggle in the Edit Controls sidebar" width="470">
+
+3. Drag **Apple Logo Illumination** into Control Center (or straight into the menu bar):
+
+   <img src="assets/edit-controls.png" alt="Apple Logo Illumination under MacBook Logo Toggle in Edit Controls" width="502">
 
 Tapping it then turns the logo light on or off. The switch shows **On** / **Off** and is highlighted when on, and a notification shows the result. Without the passwordless rule, an administrator prompt appears in between.
 
 The extension runs in the App Sandbox, so it can't get root or read the real state of the light, and the app can't report back whether a switch worked. The switch therefore shows the last value set from Control Center. It can drift from the real state after switching from the command line or by opening the app directly, or when the administrator prompt is cancelled or the switch fails. Tapping it once more brings it back in line.
 
-The extension is signed ad hoc (no developer certificate is needed). If **Apple Logo Light** doesn't show up in Edit Controls, use a shortcut instead, at the cost of a generic icon:
+The extension is signed ad hoc (no developer certificate is needed). If **Apple Logo Illumination** doesn't show up in Edit Controls, use a shortcut instead, at the cost of a generic icon:
 
 ```bash
-python3 make-shortcut.py /tmp/unsigned.shortcut && shortcuts sign --mode anyone --input /tmp/unsigned.shortcut --output "Logo Light Toggle.shortcut"
+python3 make-shortcut.py /tmp/unsigned.shortcut && shortcuts sign --mode anyone --input /tmp/unsigned.shortcut --output "MacBook Logo Toggle.shortcut"
 ```
 
-Signing needs you to be signed in to iCloud. Double-click `Logo Light Toggle.shortcut` to import it, then add the **Shortcut** control in Edit Controls and choose **Logo Light Toggle**.
+Signing needs you to be signed in to iCloud. Double-click `MacBook Logo Toggle.shortcut` to import it, then add the **Shortcut** control in Edit Controls and choose **MacBook Logo Toggle**.
 
 ## Passwordless switching
 
@@ -104,15 +112,15 @@ Both also accept `on` and `off`.
 | File | Purpose |
 | --- | --- |
 | `logo-light.sh` | Core script: `status` / `on` / `off` / `toggle` (default `toggle`) |
-| `LogoLightToggle.applescript` | App source. Opening the app toggles; opening `logolighttoggle://on` / `off` sets that state. Uses passwordless `sudo -n` when the rule is installed, the administrator prompt otherwise, then shows a notification |
+| `MacBookLogoToggle.applescript` | App source. Opening the app toggles; opening `macbooklogotoggle://on` / `off` sets that state. Uses passwordless `sudo -n` when the rule is installed, the administrator prompt otherwise, then shows a notification |
 | `install-nopasswd.sh` | Installs / uninstalls the root-owned helper and the sudoers rule that allows only it |
-| `Control/` + `LogoToggle.xcodeproj` | The Control Center switch extension (WidgetKit), built and embedded into the app by `build.sh` |
+| `Control/` + `MacBookLogoToggle.xcodeproj` | The Control Center switch extension (WidgetKit), built and embedded into the app by `build.sh` |
 | `logo.svg` | The black flat logo (classic apple with an arc cut from lower left to upper right), the single source for the app icon and the Control Center symbol |
 | `make-icon.swift` | Composes the app icon from `logo.svg` (run by `build.sh`) |
 | `make-symbol.py` | Turns `logo.svg` into the custom SF Symbol `applelogo.cut` (run by `build.sh`; don't edit its output by hand) |
 | `trace-logo.py` | One-off script that traced `logo.svg` from a reference image (needs Pillow; not part of the build) |
 | `make-shortcut.py` | Generates the optional fallback shortcut (unsigned) |
-| `build.sh` | Builds the extension, icon and app, and installs `~/Applications/Logo Light Toggle.app` |
+| `build.sh` | Builds the extension, icon and app, and installs `~/Applications/MacBook Logo Toggle.app` |
 
 ## Rebuild
 
@@ -123,6 +131,8 @@ After changing the scripts, the AppleScript, `logo.svg` or `Control/`, rebuild a
 ```
 
 If the build fails, the installed app is left untouched.
+
+Every build gets a new version number, which is what makes Control Center re-read the switch's name and description instead of showing a cached copy. macOS registers the reinstalled extension asynchronously, so Control Center can take a little while after the build to pick it up.
 
 ## Uninstall
 
@@ -138,10 +148,10 @@ If you installed the passwordless rule, remove it and the helper:
 sudo ./install-nopasswd.sh uninstall
 ```
 
-Remove **Apple Logo Light** from Control Center in Edit Controls (and, if you used the fallback, delete the **Logo Light Toggle** shortcut and its Shortcut control), then delete the app:
+Remove **Apple Logo Illumination** from Control Center in Edit Controls (and, if you used the fallback, delete the **MacBook Logo Toggle** shortcut and its Shortcut control), then delete the app:
 
 ```bash
-rm -rf ~/Applications/"Logo Light Toggle.app"
+rm -rf ~/Applications/"MacBook Logo Toggle.app"
 ```
 
 Note: reinstalling macOS also turns the logo light back on.

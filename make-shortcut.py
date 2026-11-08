@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Generates the optional "Logo Light Toggle" shortcut (.shortcut) with a single action: open Logo Light Toggle.app.
+"""Generates the optional "MacBook Logo Toggle" shortcut (.shortcut) with a single action: open MacBook Logo Toggle.app.
 
-This is the fallback entry for Control Center: if the native "Apple Logo Light" switch doesn't show up in
+This is the fallback entry for Control Center: if the native "Apple Logo Illumination" switch doesn't show up in
 Edit Controls, Control Center's "Shortcut" control can run this shortcut instead (with a generic glyph).
 The output is an unsigned plist; sign it with `shortcuts sign` before importing it.
 Usage: make-shortcut.py <output path>
@@ -9,8 +9,8 @@ Usage: make-shortcut.py <output path>
 import plistlib
 import sys
 
-BUNDLE_ID = "local.logo-light-toggle"  # must match the bundle id build.sh writes into Info.plist
-APP_NAME = "Logo Light Toggle"
+BUNDLE_ID = "local.macbook-logo-toggle"  # must match the bundle id build.sh writes into Info.plist
+APP_NAME = "MacBook Logo Toggle"
 
 workflow = {
     "WFWorkflowClientVersion": "2700",

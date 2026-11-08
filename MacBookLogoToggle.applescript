@@ -1,5 +1,5 @@
 -- Turns the Apple logo light on or off. Two entry points:
---   - opening the app directly (Finder, Shortcuts): toggle;
+--   - opening the app directly (Finder, Spotlight): toggle;
 --   - opening macbooklogotoggle://on or ://off (what the Control Center switch does): set that state.
 -- The setting lives in root's defaults domain, so switching it needs root:
 --   - with the passwordless rule (install-nopasswd.sh): run /usr/local/libexec/logo-light through sudo -n, no prompt;

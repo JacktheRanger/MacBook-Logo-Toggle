@@ -5,8 +5,8 @@
 #   - the Control Center switch extension in Control/ (xcodebuild), embedded in the app's PlugIns.
 # Everything is assembled in a temporary directory first; the installed app is only replaced once
 # every step has succeeded, so a failed build leaves the working copy alone.
-# Keep only this one copy: Shortcuts and Control Center find the app by bundle id, and extra copies
-# with the same id can be picked instead.
+# Keep only this one copy: the Control Center switch reaches the app through its URL scheme, and
+# LaunchServices can hand that URL to any other copy that claims the same scheme.
 set -euo pipefail
 cd "${0:A:h}"
 
@@ -42,7 +42,7 @@ osacompile -o "$STAGE" MacBookLogoToggle.applescript
 install -m 755 logo-light.sh "$STAGE/Contents/Resources/logo-light.sh"
 cp "$work/applet.icns" "$STAGE/Contents/Resources/applet.icns"
 INFO="$STAGE/Contents/Info.plist"
-# Fixed bundle id: the shortcut's "Open App" action looks the app up by it, and the extension's id must use it as a prefix.
+# Fixed bundle id: the extension's id must use it as a prefix.
 plutil -replace CFBundleIdentifier -string "$BUNDLE_ID" "$INFO"
 plutil -replace CFBundleVersion -string "$BUILD_VERSION" "$INFO"
 # LSUIElement: no Dock icon while it runs, and it doesn't steal focus when triggered from Control Center.

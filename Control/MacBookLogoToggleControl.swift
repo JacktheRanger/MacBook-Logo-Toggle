@@ -7,14 +7,16 @@ import WidgetKit
 // (its icon is the custom symbol generated from logo.svg).
 //
 // The extension runs in the App Sandbox and can't get root, so the actual switch is done by the
-// containing MacBook Logo Toggle.app: the extension opens macbooklogotoggle://on or ://off, and the app
-// runs /usr/local/libexec/logo-light through passwordless sudo when that rule is installed, or the
-// bundled logo-light.sh behind the admin password prompt when it isn't.
+// containing MacBook Logo Toggle.app: the extension opens macbooklogotoggle://on or ://off in a new
+// instance of the app (see perform()), and the app runs /usr/local/libexec/logo-light through
+// passwordless sudo when that rule is installed, or the bundled logo-light.sh behind the admin password
+// prompt when it isn't.
 //
 // The real state lives in root's defaults, which the sandboxed extension can't read, and the app
 // can't report back whether a switch succeeded. So the control shows the last value set here. It can
-// drift from the real state after switching from the command line or by opening the app, or when the
-// admin prompt is cancelled or the switch fails; tapping it once more brings it back in line.
+// drift from the real state after switching from the command line or from the app's window, when the
+// admin prompt is cancelled or the switch fails, or after two quick taps (see perform()); tapping it once
+// more brings it back in line.
 
 @main
 struct MacBookLogoToggleControls: WidgetBundle {
@@ -61,6 +63,15 @@ struct SetLogoIlluminationIntent: SetValueIntent {
     let url = URL(string: "macbooklogotoggle://\(value ? "on" : "off")")!
     let config = NSWorkspace.OpenConfiguration()
     config.activates = false
+    // A new instance of the app for every switch: an instance that is showing its window (or an admin
+    // prompt) handles no other events until that closes, and quits without handling a URL sent to it
+    // in the meantime, while open() still reports success. A separate instance switches right away.
+    // Accepted cost: two quick taps run side by side in no guaranteed order, so the earlier one can
+    // finish last and leave the light at the older value while the switch shows the newer one (without
+    // passwordless switching each asks for the password, and they run in the order they're confirmed).
+    // That is the same drift as a cancelled prompt, and one more tap fixes it; keeping the order would
+    // take sequence numbers in the URL and a lock shared between instances.
+    config.createsNewApplicationInstance = true
     _ = try await NSWorkspace.shared.open(url, configuration: config)
     LogoIlluminationState.isOn = value
     return .result()

@@ -1,0 +1,92 @@
+<!doctype html>
+<!--
+  Source of the installer (DMG) window's background. `python3 -I dmg/render-background.py` renders it
+  with headless Chrome at @1x and @2x and combines them into the HiDPI dmg/background.tiff that
+  ./build.sh dmg puts into the disk image. After changing this file, or the window size, icon size or
+  icon positions in dmg/settings.py, run that script again and commit the new tiff.
+
+  Finder constraints (see dmg/settings.py): the window is the size of this image, the title bar hides
+  about the bottom 32pt, and icon labels are always black, so the icons sit on the light part.
+  The image is static and can't follow the system language, so the tagline comes in English and
+  Chinese. The window size and icon positions aren't set here: the render script passes them from
+  dmg/settings.py in the page's ?layout= parameter, and layout() sizes the page and draws the arrow
+  between the two icons. Opened without it, the page shows the band only.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --band-top: #2c2c2e; --band-bottom: #121214; --arrow: #3a3a3c; }
+  html, body { margin: 0; }
+  body {
+    position: relative;
+    overflow: hidden;
+    font-family: -apple-system, "SF Pro Text", "PingFang SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: linear-gradient(180deg, #fff, #f5f5f7);
+  }
+  /* The band at the top: a dark lid with the glowing logo, which is what the app switches */
+  .band {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 132px;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--band-top) 0%, var(--band-bottom) 100%);
+  }
+  .halo {
+    position: absolute;
+    right: -29px; /* centred on the logo */
+    top: -54px;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent 62%);
+  }
+  .logo {
+    position: absolute;
+    right: 64px;
+    top: 34px; /* centred in the band */
+    height: 64px;
+    /* logo.svg is black; invert makes it white, and the drop shadows make it glow */
+    filter: invert(1) drop-shadow(0 0 6px rgba(255, 255, 255, 0.75)) drop-shadow(0 0 18px rgba(255, 255, 255, 0.4));
+  }
+  .name { position: absolute; left: 44px; top: 34px; font-size: 26px; font-weight: 600; letter-spacing: -0.01em; color: #fff; }
+  .tagline { position: absolute; left: 44px; top: 72px; font-size: 13.5px; color: rgba(255, 255, 255, 0.9); }
+  .tagline.zh { top: 93px; font-size: 12px; color: rgba(255, 255, 255, 0.66); }
+  #arrow { position: absolute; overflow: visible; }
+</style>
+</head>
+<body>
+  <div class="band" aria-hidden="true"><div class="halo"></div><img class="logo" src="../logo.svg" alt=""></div>
+  <div class="name">MacBook Logo Toggle</div>
+  <div class="tagline">Turn the glowing Apple logo on or off from Control Center</div>
+  <div class="tagline zh" lang="zh-CN">在控制中心开关机身背面发光的 Apple 标志</div>
+  <svg id="arrow" aria-hidden="true"></svg>
+<script>
+  // Draws the arrow from the right of the app icon to the left of the Applications icon, 30pt clear of
+  // each, a little above the icon centres so it lines up with the icons rather than icon plus label.
+  // Points are Finder icon centres relative to the top left of the window's content area (= this image).
+  function layout({ width, height, app, apps, iconSize }) {
+    Object.assign(document.body.style, { width: width + 'px', height: height + 'px' });
+    const x1 = app[0] + iconSize / 2 + 30;
+    const x2 = apps[0] - iconSize / 2 - 30;
+    const y = (app[1] + apps[1]) / 2 - 10;
+    const len = x2 - x1;
+    const svg = document.getElementById('arrow');
+    Object.assign(svg.style, { left: x1 + 'px', top: y - 12 + 'px' });
+    svg.setAttribute('width', len);
+    svg.setAttribute('height', 24);
+    // userSpaceOnUse: a horizontal line's bounding box has no height, so objectBoundingBox draws nothing
+    svg.innerHTML = `
+      <defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${len}" y2="0">
+        <stop offset="0" stop-color="#3a3a3c" stop-opacity="0.3"/><stop offset="1" stop-color="#3a3a3c"/>
+      </linearGradient></defs>
+      <path d="M2 12 H${len - 4}" stroke="url(#g)" stroke-width="2.25" stroke-linecap="round" fill="none"/>
+      <path d="M${len - 12} 5.5 L${len - 3} 12 L${len - 12} 18.5" stroke="var(--arrow)" stroke-width="2.25"
+        stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  }
+  const param = new URLSearchParams(location.search).get('layout');
+  if (param) layout(JSON.parse(param));
+</script>
+</body>
+</html>

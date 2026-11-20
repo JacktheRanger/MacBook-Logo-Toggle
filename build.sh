@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Builds "MacBook Logo Toggle.app":
+# Builds "Logo Toggle.app", the app of the MacBook Logo Toggle project:
 #   - MacBookLogoToggle.applescript compiled into the app, with logo-light.sh, install-nopasswd.sh and
 #     eject-installer.sh bundled in Resources (self-contained);
 #   - logo.svg → the app icon (make-icon.swift) and the custom symbol of the Control Center switch (make-symbol.py);
@@ -12,7 +12,8 @@
 # Everything is assembled in a temporary directory first; the installed app or the DMG is only
 # replaced once every step has succeeded, so a failed build leaves the working copy alone.
 # Keep only one installed copy: the Control Center switch reaches the app through its URL scheme,
-# and LaunchServices can hand that URL to any other copy that claims the same scheme.
+# and LaunchServices can hand that URL to any other copy that claims the same scheme. After
+# installing, the build lists any other app LaunchServices would hand that URL to (end of step 4b).
 set -euo pipefail
 cd "${0:A:h}"
 
@@ -33,11 +34,16 @@ if [[ $MODE == dmg ]] && ! python3 -c 'import dmgbuild' 2>/dev/null; then
   exit 1
 fi
 
-APP="$HOME/Applications/MacBook Logo Toggle.app"
+# The app's file name, which is the name macOS shows for it (under its icon in Finder and the Apps
+# view, on its notifications). Deliberately shorter than the project's name: the Apps view shows a
+# single line and cut the full name off ("MacBook Logo…"). Only the app is called this; the project,
+# the DMG, the bundle ids and the URL scheme keep the full name.
+APP_NAME="Logo Toggle"
+APP="$HOME/Applications/$APP_NAME.app"
 BUNDLE_ID="local.macbook-logo-toggle"
 # The version people see (CFBundleShortVersionString, in Finder's Get Info), for the app and the
 # extension alike: it overrides the extension project's MARKETING_VERSION. A release is tagged v$VERSION.
-VERSION="1.0.0"
+VERSION="1.0.1"
 # The DMG's file and volume names. The app's Info.plist gets them too, for eject-installer.sh to
 # recognise a mounted installer by.
 DMG_FILE="MacBook-Logo-Toggle.dmg"
@@ -47,7 +53,7 @@ DMG_VOLUME="MacBook Logo Toggle"
 BUILD_VERSION=$(date +%Y%m%d.%H%M%S)
 LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 work=$(mktemp -d)
-STAGE="$work/MacBook Logo Toggle.app"
+STAGE="$work/$APP_NAME.app"
 # The staged copy carries the same bundle ids as the installed one. When installing, it is
 # unregistered and deleted before the installed copy is registered (see step 4b); unregistering it
 # afterwards would also drop the freshly registered extension. Here it only needs cleaning up after a
@@ -135,9 +141,38 @@ pluginkit -a "$APP/Contents/PlugIns/MacBookLogoToggleControl.appex"
 
 # Launching the app through LaunchServices gets it marked trusted too, so this backs up -trusted with
 # nothing to parse. The no-op launch URL leaves the light alone.
-open -g -a "$APP" "macbooklogotoggle://launch" ||
-  echo "Couldn't launch the app once; if the Control Center switch snaps back, run: open -g -a ${(qq)APP} \"macbooklogotoggle://launch\"" >&2
+LAUNCH_URL="macbooklogotoggle://launch"
+open -g -a "$APP" "$LAUNCH_URL" ||
+  echo "Couldn't launch the app once; if the Control Center switch snaps back, run: open -g -a ${(qq)APP} \"$LAUNCH_URL\"" >&2
 echo "Installed: $APP"
+
+# One copy only (see the header). Ask LaunchServices itself which apps it would hand the switch's link
+# to, and list any besides the one just installed. That is all the build knows about them: usually
+# they are other copies of this app (a build from before the app got its shorter name, a download in
+# /Applications, the installer image still mounted), but any app declaring the scheme shows up, so the
+# message doesn't say what they are and only names the usual ways out. Nothing is removed: they
+# aren't this build's to delete. LaunchServices leaves out a copy in the Trash, and one in a temporary
+# directory, so those aren't listed. If the question can't be asked (no login session), nothing is
+# reported.
+claimants=$(osascript -l JavaScript -e '
+  ObjC.import("AppKit")
+  function run(argv) {
+    const urls = $.NSWorkspace.sharedWorkspace.URLsForApplicationsToOpenURL($.NSURL.URLWithString(argv[0]))
+    const paths = []
+    for (let i = 0; i < urls.count; i++) paths.push(urls.objectAtIndex(i).path.js)
+    return paths.join("\n")
+  }' "$LAUNCH_URL" 2>/dev/null) || claimants=
+others=()
+for other in ${(f)claimants}; do
+  [[ ${other:A} == ${APP:A} ]] || others+=("$other")
+done
+if (( $#others )); then
+  {
+    echo "macOS can hand a tap on the Control Center switch to these as well, because they claim the same link (${LAUNCH_URL%%:*}://):"
+    printf '  %s\n' "${others[@]}"
+    echo "Leave only $APP claiming it: move other copies of the app to the Trash, and eject the installer disk image if one of them is on it."
+  } >&2
+fi
 
 # With passwordless switching the app runs the root-owned copy of logo-light.sh that install-nopasswd.sh
 # made, which this build can't update (it needs sudo). The copy is world-readable, so just compare.

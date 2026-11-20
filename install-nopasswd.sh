@@ -4,7 +4,7 @@
 # without a password, with toggle / on / off / status as the only allowed arguments. The rule names
 # the account by its numeric user ID, so no account name can widen it (ALL, or an all-caps name that
 # sudoers would read as an alias).
-# MacBook Logo Toggle.app detects the rule and switches without showing the admin prompt.
+# Logo Toggle.app detects the rule and switches without showing the admin prompt.
 #
 # Usage: sudo ./install-nopasswd.sh [install]    install (re-run after editing logo-light.sh to update it)
 #        sudo ./install-nopasswd.sh uninstall    remove; the app goes back to asking for a password

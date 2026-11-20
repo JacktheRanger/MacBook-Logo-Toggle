@@ -7,7 +7,7 @@ import WidgetKit
 // (its icon is the custom symbol generated from logo.svg).
 //
 // The extension runs in the App Sandbox and can't get root, so the actual switch is done by the
-// containing MacBook Logo Toggle.app: the extension opens macbooklogotoggle://on or ://off in a new
+// containing Logo Toggle.app: the extension opens macbooklogotoggle://on or ://off in a new
 // instance of the app (see perform()), and the app runs /usr/local/libexec/logo-light through
 // passwordless sudo when that rule is installed, or the bundled logo-light.sh behind the admin password
 // prompt when it isn't.

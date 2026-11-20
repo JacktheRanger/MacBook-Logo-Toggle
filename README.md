@@ -17,23 +17,23 @@ You need:
 ## Install
 
 1. **Download** [MacBook-Logo-Toggle.dmg](https://github.com/JacktheRanger/MacBook-Logo-Toggle/releases/latest/download/MacBook-Logo-Toggle.dmg) (it is also on the [Releases page](https://github.com/JacktheRanger/MacBook-Logo-Toggle/releases/latest)).
-2. **Open the downloaded file** and drag **MacBook Logo Toggle** onto the **Applications** folder next to it.
-3. **Open MacBook Logo Toggle from your Applications folder.** The first time, macOS says it can't check the app for malicious software and doesn't open it. Click **Done**, then:
+2. **Open the downloaded file** and drag **Logo Toggle** (the app goes by this shorter name) onto the **Applications** folder next to it.
+3. **Open Logo Toggle from your Applications folder.** The first time, macOS says it can't check the app for malicious software and doesn't open it. Click **Done**, then:
    1. open **System Settings** and go to **Privacy & Security**;
-   2. scroll down to **Security**, where macOS says MacBook Logo Toggle was blocked, and click **Open Anyway**;
+   2. scroll down to **Security**, where macOS says Logo Toggle was blocked, and click **Open Anyway**;
    3. confirm with **Open Anyway** and your password.
 
    You only do this once. macOS asks because the app isn't signed with a paid Apple developer certificate, not because something was found in it; all of its source code is in this repository.
 4. **The app opens a small window**, and ejects the downloaded disk image if it is still open. Click **Enable Passwordless…** and enter your password once, so that the switch later works with a single tap instead of asking for your password every time. This is optional; [Passwordless switching](#passwordless-switching) explains what it allows. Then click **Done**.
 5. **Add the switch to Control Center:**
    1. Click Control Center in the menu bar, scroll to the bottom and click **Edit Controls**.
-   2. Search for **Apple Logo**, or pick **MacBook Logo Toggle** in the sidebar:
+   2. Search for **Apple Logo**, or pick **Logo Toggle** in the sidebar:
 
-      <img src="assets/edit-controls-sidebar.png" alt="MacBook Logo Toggle in the Edit Controls sidebar" width="470">
+      <img src="assets/edit-controls-sidebar.png" alt="Logo Toggle in the Edit Controls sidebar" width="470">
 
    3. Drag **Apple Logo Illumination** into Control Center, or straight into the menu bar:
 
-      <img src="assets/edit-controls.png" alt="Apple Logo Illumination under MacBook Logo Toggle in Edit Controls" width="528">
+      <img src="assets/edit-controls.png" alt="Apple Logo Illumination under Logo Toggle in Edit Controls" width="414">
 
 That's it: tap the switch to turn the logo off or on. It shows **On** or **Off**, and a notification confirms each switch. Without passwordless switching, macOS asks for your password first.
 
@@ -41,7 +41,7 @@ Opening the app again brings back its window, where you can also switch the ligh
 
 ## Troubleshooting
 
-**The switch flips back as soon as I tap it.** macOS ignores the switch until the app has been opened once. Open MacBook Logo Toggle from your Applications folder (step 3 of [Install](#install)), click **Done**, and try again.
+**The switch flips back as soon as I tap it.** macOS ignores the switch until the app has been opened once. Open Logo Toggle from your Applications folder (step 3 of [Install](#install)), click **Done**, and try again.
 
 **Apple Logo doesn't show up in Edit Controls.** Check that the app is in your Applications folder and has been opened once, then close Edit Controls and open it again. macOS can take a little while to pick up a newly installed app.
 
@@ -57,17 +57,19 @@ Opening the app again brings back its window, where you can also switch the ligh
 
 Download the new DMG and drag the app onto the Applications folder again, choosing **Replace**. Then open it once from Applications, as in step 3 of [Install](#install): macOS asks again for each new download. If its window offers **Update Passwordless…**, click it.
 
+If your Applications folder still has the app under its earlier name, **MacBook Logo Toggle**, macOS doesn't offer to replace it: drag that copy to the Trash, so that only **Logo Toggle** is left. With both installed, the switch can end up reaching the old one.
+
 ## Uninstall
 
 1. If you turned the logo off, turn it back on first: macOS keeps the setting after the app is gone. Tap the switch until the notification says **Apple Logo Illumination: On**.
 2. If you enabled passwordless switching, open the app and click **Disable Passwordless…**. If the window offers **Update Passwordless…** instead, click that first; the window then offers **Disable Passwordless…**. If the update fails, turn passwordless switching off with the script inside the app instead, before deleting the app: open Terminal (in the Utilities folder of your Applications folder), paste this, press Return and enter your password:
 
    ```bash
-   sudo "/Applications/MacBook Logo Toggle.app/Contents/Resources/install-nopasswd.sh" uninstall
+   sudo "/Applications/Logo Toggle.app/Contents/Resources/install-nopasswd.sh" uninstall
    ```
 
 3. Remove **Apple Logo Illumination** from Control Center in **Edit Controls**.
-4. Drag MacBook Logo Toggle from your Applications folder to the Trash.
+4. Drag Logo Toggle from your Applications folder to the Trash.
 
 Reinstalling macOS also turns the logo light back on.
 
@@ -132,7 +134,7 @@ sudo xcode-select -s /Applications/Xcode.app
    To turn it off again: `sudo ./install-nopasswd.sh uninstall`.
 4. Add the switch to Control Center as in step 5 of [Install](#install).
 
-Keep only one copy of the app: not a downloaded one in Applications and a built one in `~/Applications` at the same time. The switch reaches the app through the `macbooklogotoggle://` link, which macOS can hand to either copy.
+Keep only one copy of the app: not a downloaded one in Applications and a built one in `~/Applications` at the same time, and not one built while the app was still called **MacBook Logo Toggle** next to the new **Logo Toggle**. The switch reaches the app through the `macbooklogotoggle://` link, which macOS can hand to either copy. The build doesn't remove anything; when it finishes, it lists every other app macOS could hand that link to. Move other copies to the Trash, and eject the installer disk image if it is still open.
 
 ### Command line
 
@@ -175,7 +177,7 @@ Every build gets a new version number, which is what makes Control Center re-rea
 macOS ignores the switch of an app it doesn't trust: tapping it only snaps it back. So the build registers the app as trusted, the way Xcode registers the apps it builds, and also launches it once through `macbooklogotoggle://launch`, which switches nothing but is another way to get it trusted. If the switch ever snaps back anyway, launch the app the same way. Name the app by its path: a bare `open "macbooklogotoggle://launch"` lets macOS pick any copy that claims the link, possibly an older one that switches the light.
 
 ```bash
-open -g -a ~/Applications/"MacBook Logo Toggle.app" "macbooklogotoggle://launch"
+open -g -a ~/Applications/"Logo Toggle.app" "macbooklogotoggle://launch"
 ```
 
 ### Make the DMG
@@ -216,7 +218,7 @@ The app in it is signed ad hoc, not with a notarized Developer ID, which is why 
 | `make-icon.swift` | Composes the app icon from `logo.svg` (run by `build.sh`) |
 | `make-symbol.py` | Turns `logo.svg` into the custom SF Symbol `applelogo.cut` (run by `build.sh`; don't edit its output by hand) |
 | `trace-logo.py` | One-off script that traced `logo.svg` from a reference image (needs Pillow; not part of the build) |
-| `build.sh` | Builds the extension, icon and app, then either installs `~/Applications/MacBook Logo Toggle.app`, registers it as trusted and launches it once without switching the light, or (`./build.sh dmg`) packages it as `release/MacBook-Logo-Toggle.dmg` with dmgbuild |
+| `build.sh` | Builds the extension, icon and app, then either installs `~/Applications/Logo Toggle.app`, registers it as trusted and launches it once without switching the light, or (`./build.sh dmg`) packages it as `release/MacBook-Logo-Toggle.dmg` with dmgbuild |
 
 ## License
 

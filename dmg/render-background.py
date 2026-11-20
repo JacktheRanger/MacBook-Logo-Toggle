@@ -31,7 +31,7 @@ def fail(message):
 
 def read_layout():
     # The same defines build.sh passes; their values don't matter for the layout.
-    settings = {"defines": {"app": "MacBook Logo Toggle.app", "background": ""}}
+    settings = {"defines": {"app": "Logo Toggle.app", "background": ""}}
     source = (HERE / "settings.py").read_text(encoding="utf-8")
     exec(compile(source, str(HERE / "settings.py"), "exec"), settings, settings)
     (_, (width, height)) = settings["window_rect"]

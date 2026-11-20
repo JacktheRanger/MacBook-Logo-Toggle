@@ -19,7 +19,7 @@ property helperPath : "/usr/local/libexec/logo-light"
 on run
 	if runsFromDiskImage() then
 		activate
-		display alert "Move MacBook Logo Toggle to Applications first" message "Drag it onto the Applications folder, then open it from there. Its Control Center switch doesn't work while the app runs from the disk image." as warning
+		display alert "Move Logo Toggle to Applications first" message "Drag it onto the Applications folder, then open it from there. Its Control Center switch doesn't work while the app runs from the disk image." as warning
 		return
 	end if
 	-- Installed and opened: eject the installer disk image if it's still mounted (see the script for
@@ -79,7 +79,7 @@ on showWindow()
 			set passwordText to "Each switch asks for your administrator password. Enable passwordless switching to switch with a single tap."
 			set passwordButton to "Enable Passwordless…"
 			set passwordAction to "install"
-			set promptText to "MacBook Logo Toggle wants to let you switch the Apple logo light without a password. Other apps running as you could then switch it too, but get no other administrator access."
+			set promptText to "Logo Toggle wants to let you switch the Apple logo light without a password. Other apps running as you could then switch it too, but get no other administrator access."
 		else
 			-- The status line ends in ": Off", or reads ": On (follows display brightness)"; only the
 			-- ending is compared, not the light's name before it.
@@ -96,7 +96,7 @@ on showWindow()
 				set passwordText to "Passwordless switching is on: switching needs no password."
 				set passwordButton to "Disable Passwordless…"
 				set passwordAction to "uninstall"
-				set promptText to "MacBook Logo Toggle wants to turn off passwordless switching. Each switch will ask for your password again."
+				set promptText to "Logo Toggle wants to turn off passwordless switching. Each switch will ask for your password again."
 			else
 				-- Deliberately Update only, no Disable: the alert has room for three buttons (Done, this
 				-- one, the light). Once updated, the window offers Disable (the README's Uninstall says so).
@@ -107,7 +107,7 @@ on showWindow()
 				set passwordText to "Passwordless switching is on, but its helper differs from the one in this version of the app. Update it to match."
 				set passwordButton to "Update Passwordless…"
 				set passwordAction to "install"
-				set promptText to "MacBook Logo Toggle wants to update the helper behind passwordless switching."
+				set promptText to "Logo Toggle wants to update the helper behind passwordless switching."
 			end if
 		end if
 

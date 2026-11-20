@@ -1,6 +1,6 @@
 #!/bin/zsh -f
 # Ejects the app's installer disk image (release/MacBook-Logo-Toggle.dmg from ./build.sh dmg) if it is
-# still mounted. MacBook Logo Toggle.app bundles this script and runs it in the background whenever it
+# still mounted. Logo Toggle.app bundles this script and runs it in the background whenever it
 # is opened directly from where it is installed.
 #
 # Only the app itself can do this: a disk image is passive, and nothing runs when the app is dragged
@@ -12,8 +12,8 @@
 # a removable volume makes macOS ask for permission. Both names must match:
 #   - the image file starts with the DMG's base name and ends in .dmg (a browser's " (1)" for a
 #     repeated download keeps the start);
-#   - the volume is named after the app, optionally followed by the " 1" macOS adds when a volume of the
-#     same name is already mounted.
+#   - the volume has the DMG's volume name (the project's name, not the app's shorter one), optionally
+#     followed by the " 1" macOS adds when a volume of the same name is already mounted.
 # Both names come from build.sh, which writes them into the app's Info.plist (InstallerImageName,
 # InstallerVolumeName), so the two can't drift apart.
 #
